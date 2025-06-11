@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reverie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .balance-pulse {
+        animation: pulse 1s ease-in-out;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+          background-color: #c7d2fe;
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header -->
+      <header class="mb-8">
+        <div class="flex justify-between items-center">
+          <h1 class="text-3xl font-bold text-indigo-700">AO Content Vault</h1>
+          <div id="walletSection">
+            <button
+              id="connectWallet"
+              class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+            >
+              Connect Wallet
+            </button>
+            <div id="walletInfo" class="hidden">
+              <span
+                id="walletAddressDisplay"
+                class="text-sm text-gray-600 mr-2"
+              ></span>
+              <span
+                id="tokenBalance"
+                class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-md text-sm"
+              ></span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Token Balance Component -->
+      <div
+        id="tokenBalanceComponent"
+        class="mb-8 bg-white p-4 rounded-lg shadow-md hidden"
+      >
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-800">
+              Your Token Balance
+            </h2>
+            <p class="text-sm text-gray-600">
+              Use tokens to access exclusive content
+            </p>
+          </div>
+          <div class="flex items-center">
+            <div
+              id="balanceDisplay"
+              class="text-3xl font-bold text-indigo-700 mr-2"
+            >
+              0
+            </div>
+            <div
+              id="tokenTickerDisplay"
+              class="text-lg font-medium text-indigo-500"
+            >
+              token(s)
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 flex justify-end">
+          <button
+            id="refreshBalance"
+            class="text-indigo-600 text-sm flex items-center hover:text-indigo-800"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            Refresh Balance
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Creator Section -->
+        <section
+          id="creatorSection"
+          class="bg-white p-6 rounded-lg shadow-md hidden"
+        >
+          <h2 class="text-2xl font-semibold mb-4 text-indigo-700">
+            Creator Dashboard
+          </h2>
+
+          <!-- Content Upload Form -->
+          <div class="mb-6 border-b pb-6">
+            <h3 class="text-lg font-medium mb-3">Upload New Content</h3>
+            <form id="uploadForm">
+              <div class="mb-3">
+                <label
+                  for="contentTitle"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                  >Title</label
+                >
+                <input
+                  type="text"
+                  id="contentTitle"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label
+                  for="contentDescription"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                  >Description</label
+                >
+                <textarea
+                  id="contentDescription"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  rows="2"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label
+                  for="contentFile"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                  >File</label
+                >
+                <input
+                  type="file"
+                  id="contentFile"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+              >
+                Upload & Encrypt
+              </button>
+            </form>
+          </div>
+
+          <!-- Token Management -->
+          <div>
+            <h3 class="text-lg font-medium mb-3">Token Management</h3>
+            <form id="tokenInfoForm" class="mb-4">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label
+                    for="tokenName"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                    id="tokenNameDisplay"
+                    >Token Name</label
+                  >
+                  <input
+                    type="text"
+                    id="tokenName"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="tokenTicker"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                    id="tokenTickerDisplay"
+                    >Token Ticker</label
+                  >
+                  <input
+                    type="text"
+                    id="tokenTicker"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="mintPrice"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                    id="mintPrice"
+                    >Mint Price (AR)</label
+                  >
+                  <input
+                    type="number"
+                    id="mintPrice"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                class="mt-3 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+              >
+                Update Token Info
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- User Section -->
+        <section id="userSection" class="bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-2xl font-semibold mb-4 text-indigo-700">
+            Available Content
+          </h2>
+          <!-- Token Minting -->
+          <div class="mb-6 p-4 bg-indigo-50 rounded-lg">
+            <h3 class="text-lg font-medium mb-2">Get Access Token</h3>
+            <p class="text-sm text-gray-600 mb-3">
+              Mint a token to access exclusive content
+            </p>
+            <div class="flex items-center">
+              <button
+                id="mintToken"
+                class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+              >
+                Mint Token
+              </button>
+              <span id="mintPrice" class="ml-2 text-sm text-gray-600"></span>
+            </div>
+          </div>
+          <!-- Content List -->
+          <div>
+            <h3 class="text-lg font-medium mb-3">Exclusive Content</h3>
+            <div id="contentList" class="space-y-3">
+              <p class="text-gray-500 text-sm italic">
+                Connect your wallet to view available content
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Content Viewer -->
+        <section
+          id="contentViewer"
+          class="bg-white p-6 rounded-lg shadow-md hidden md:col-span-2"
+        >
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-semibold text-indigo-700" id="viewerTitle">
+              Content Viewer
+            </h2>
+            <button id="closeViewer" class="text-gray-500 hover:text-gray-700">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+          <div
+            id="contentContainer"
+            class="border rounded-lg p-4 min-h-[300px]"
+          ></div>
+        </section>
+      </main>
+
+      <!-- Status Messages -->
+      <div
+        id="statusMessage"
+        class="fixed bottom-4 right-4 max-w-md bg-white shadow-lg rounded-lg p-4 hidden"
+      >
+        <div class="flex items-start">
+          <div id="statusIcon" class="flex-shrink-0 w-6 h-6 mr-3"></div>
+          <div>
+            <h3 id="statusTitle" class="text-sm font-medium"></h3>
+            <p id="statusText" class="text-sm text-gray-500 mt-1"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+      import {
+        message,
+        result,
+        createDataItemSigner,
+        connect,
+      } from "https://unpkg.com/@permaweb/aoconnect/dist/browser.js";
+
+      const PROCESS_ID = "-bzf96bmn3u8nJQp4xMeGk3aOcYeKvmtzXICzzTK8NI";
+
+      // --- UPDATED AOS TOKEN PROCESS ID ---
+      // This is the ID from your npx aos terminal startup logs.
+      const AOS_TOKEN_PROCESS_ID =
+        "kUet9IGoa4zu_LQ1lcGXLX9XXKUcWzD6fPk8TRjoHXQ";
+      // ------------------------------------
+
+      const ao = connect({ process: PROCESS_ID });
+      //   const state = {
+      //     wallet: null,
+      //     signer: null,
+      //     tokenInfo: null,
+      //     balance: 0,
+      //   };
+
+      const state = {
+        walletAddress: null, // Renamed from 'wallet' for clarity, as it holds the address string
+        signer: null,
+        tokenInfo: {}, // Initialize as an EMPTY OBJECT, not null!
+        tokenBalance: 0, // Renamed from 'balance' to be more specific to token balance
+        processId: "-bzf96bmn3u8nJQp4xMeGk3aOcYeKvmtzXICzzTK8NI", // Your vault process ID
+        aoTokenProcessId: "kUet9IGoa4zu_LQ1lcGXLX9XXKUcWzD6fPk8TRjoHXQ", // The actual PNTS/CAT token process ID
+      };
+      const elements = {
+        connectWallet: document.getElementById("connectWallet"),
+        walletInfo: document.getElementById("walletInfo"),
+        walletAddress: document.getElementById("walletAddress"),
+        tokenBalance: document.getElementById("tokenBalance"),
+        balanceDisplay: document.getElementById("balanceDisplay"),
+        tokenTickerDisplay: document.getElementById("tokenTickerDisplay"),
+        mintToken: document.getElementById("mintToken"),
+        mintPrice: document.getElementById("mintPrice"),
+        contentList: document.getElementById("contentList"),
+        tokenBalanceComponent: document.getElementById("tokenBalanceComponent"),
+        refreshBalance: document.getElementById("refreshBalance"),
+        creatorSection: document.getElementById("creatorSection"),
+        closeViewer: document.getElementById("closeViewer"),
+        contentViewer: document.getElementById("contentViewer"),
+        viewerTitle: document.getElementById("viewerTitle"),
+        contentContainer: document.getElementById("contentContainer"),
+        uploadForm: document.getElementById("uploadForm"),
+        tokenInfoForm: document.getElementById("tokenInfoForm"),
+      };
+
+      //   async function connectWallet() {
+      //     try {
+      //       showStatus(
+      //         "loading",
+      //         "Connecting Wallet",
+      //         "Requesting connection to ArConnect..."
+      //       );
+      //       await window.arweaveWallet.connect([
+      //         "ACCESS_ADDRESS",
+      //         "SIGN_TRANSACTION",
+      //         "ACCESS_PUBLIC_KEY",
+      //         "SIGNATURE",
+      //       ]);
+      //       state.walletAddress = await window.arweaveWallet.getActiveAddress();
+      //       state.signer = createDataItemSigner(window.arweaveWallet);
+      //       elements.connectWallet.classList.add("hidden");
+      //       elements.walletInfo.classList.remove("hidden");
+      //       elements.walletAddress.textContent = shortenAddress(state.walletAddress);
+      //       elements.tokenBalanceComponent.classList.remove("hidden");
+      //       await loadTokenInfo();
+      //       await refreshBalance();
+      //       showStatus(
+      //         "success",
+      //         "Wallet Connected",
+      //         `Connected to ${shortenAddress(state.wallet)}`
+      //       );
+      //     } catch (error) {
+      //       console.error("Error connecting wallet:", error);
+      //       showStatus(
+      //         "error",
+      //         "Connection Failed",
+      //         error.message || "Could not connect to wallet"
+      //       );
+      //     }
+      //   }
+
+      // --- Updated connectWallet Function ---
+      async function connectWallet() {
+        try {
+          showStatus(
+            "loading",
+            "Connecting Wallet",
+            "Please approve wallet connection..."
+          );
+          const arweaveWallet = await window.arweaveWallet.connect([
+            "ACCESS_ADDRESS",
+            "SIGN_TRANSACTION",
+            "ACCESS_PUBLIC_KEY",
+            "SIGNATURE",
+          ]);
+          const walletAddress = await window.arweaveWallet.getActiveAddress();
+          state.walletAddress = walletAddress;
+          document.getElementById("walletAddressDisplay").textContent =
+            walletAddress;
+          document.getElementById("connectWallet").style.display = "none";
+          //   document.getElementById("disconnectWallet").style.display = "block";
+          //   document.getElementById("appContainer").classList.remove("hidden");
+           document.getElementById("walletInfo").classList.remove("hidden");
+          showStatus(
+            "success",
+            "Wallet Connected",
+            `Connected as ${walletAddress}`
+          );
+
+          // --- Crucial: Call refreshTokensAndContentInfo here ---
+          await refreshTokensAndContentInfo();
+          // --- End Crucial ---
+
+          await refreshBalance(); // Refresh balance after wallet connect and token info is loaded
+        } catch (error) {
+          console.error("FRONTEND DEBUG: Error connecting wallet:", error);
+          showStatus(
+            "error",
+            "Wallet Connection Failed",
+            error.message || "Could not connect wallet."
+          );
+        }
+      }
+      async function loadTokenInfo() {
+        try {
+          const response = await sendMessage("TokenInfo");
+          if (response) {
+            state.tokenInfo = response;
+            const isCreator = state.walletAddress === response.creator;
+            if (isCreator) {
+              elements.creatorSection.classList.remove("hidden");
+              document.getElementById("tokenName").value =
+                response.name || "Content Access Token";
+              document.getElementById("tokenTicker").value =
+                response.ticker || "CAT";
+              document.getElementById("mintPrice").value =
+                (response.mintPrice || 1000000000) / 1000000000;
+            }
+            const mintPriceAR = (
+              (response.mintPrice || 1000000000) / 1000000000
+            ).toFixed(2);
+            elements.mintPrice.textContent = `Price: ${mintPriceAR} AR`;
+            elements.tokenTickerDisplay.textContent =
+              response.ticker || "tokens";
+          }
+        } catch (error) {
+          console.error("Error loading token info:", error);
+          showStatus(
+            "error",
+            "Token Info Error",
+            error.message || "Failed to load token information"
+          );
+        }
+      }
+
+      function updateContentVisibility() {
+        console.log(
+          "Checking content gating. Current balance:",
+          state.tokenBalance
+        );
+        if (state.tokenBalance > 0) {
+          elements.contentList.innerHTML =
+            '<div class="p-4 bg-green-50 rounded">You can now see the exclusive content!</div>';
+        } else {
+          elements.contentList.innerHTML = `
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <h4 class="font-medium text-yellow-800">Token Required</h4>
+        <p class="text-sm text-yellow-700 mt-1">You need to mint at least one token to view exclusive content.</p>
+        <button id="mintTokenFromNotice" class="mt-2 bg-yellow-100 text-yellow-800 px-3 py-1 rounded text-sm hover:bg-yellow-200 transition">
+          Mint Token Now
+        </button>
+      </div>
+    `;
+          document
+            .getElementById("mintTokenFromNotice")
+            .addEventListener("click", mintToken);
+        }
+      }
+
+      function updateBalanceDisplay(animate = false) {
+        const ticker = state.tokenInfo?.ticker || "tokens";
+        elements.tokenBalance.textContent = `${state.tokenBalance} ${ticker}`;
+        elements.balanceDisplay.textContent = state.tokenBalance;
+        elements.tokenTickerDisplay.textContent = ticker;
+        if (animate) {
+          elements.balanceDisplay.classList.add("balance-pulse");
+          setTimeout(() => {
+            elements.balanceDisplay.classList.remove("balance-pulse");
+          }, 1000);
+        }
+        console.log("UI updated: token balance now", state.tokenBalance);
+      }
+
+      // --- Start of Updated refreshBalance Function (from previous discussion) ---
+      async function refreshBalance() {
+        if (!state.walletAddress) {
+          console.log("Wallet not connected, cannot refresh balance.");
+          document.getElementById("balanceDisplay").textContent = "0";
+          return;
+        }
+
+        console.log("Attempting to refresh balance for:", state.walletAddress);
+
+        try {
+          showStatus(
+            "loading",
+            "Refreshing Balance",
+            "Fetching token balance..."
+          );
+
+          // Query the Token Process directly for the balance
+          const balanceResult = await message({
+            process: AOS_TOKEN_PROCESS_ID, // Query the actual token process
+            signer: createDataItemSigner(window.arweaveWallet), // Use signer even for queries to avoid errors
+            tags: [
+              { name: "Action", value: "Balance" },
+              { name: "Target", value: state.walletAddress },
+            ],
+          });
+
+          const balanceQueryResponse = await result({
+            process: AOS_TOKEN_PROCESS_ID,
+            message: balanceResult,
+          });
+
+          console.log(
+            "Balance query raw response:",
+            JSON.stringify(balanceQueryResponse, null, 2)
+          );
+
+          let currentBalance = 0;
+          let balanceMessage = "Could not retrieve balance.";
+
+          if (
+            balanceQueryResponse &&
+            balanceQueryResponse.Messages &&
+            balanceQueryResponse.Messages.length > 0
+          ) {
+            const msg = balanceQueryResponse.Messages[0];
+            const balanceTag = msg.Tags?.find((tag) => tag.name === "Balance");
+            const statusTag = msg.Tags?.find((tag) => tag.name === "Status");
+
+            if (statusTag && statusTag.value === "Success" && balanceTag) {
+              currentBalance = parseInt(balanceTag.value, 10);
+              balanceMessage = `Balance: ${currentBalance} ${state.tokenInfo.ticker}`;
+              document.getElementById(
+                "balanceDisplay"
+              ).textContent = `${currentBalance} ${state.tokenInfo.ticker}`;
+              showStatus("success", "Balance Updated", balanceMessage);
+            } else if (statusTag && statusTag.value === "Error") {
+              balanceMessage =
+                msg.Tags?.find((tag) => tag.name === "Error")?.value ||
+                msg.Data ||
+                "Error fetching balance.";
+              console.error("Error fetching balance:", balanceMessage);
+              document.getElementById("balanceDisplay").textContent = "Error";
+              showStatus("error", "Balance Error", balanceMessage);
+            } else if (msg.Data) {
+              // Fallback for simple data responses
+              currentBalance = parseInt(msg.Data, 10);
+              if (!isNaN(currentBalance)) {
+                balanceMessage = `Balance: ${currentBalance} ${state.tokenInfo.ticker} (Parsed from Data)`;
+                document.getElementById(
+                  "balanceDisplay"
+                ).textContent = `${currentBalance} ${state.tokenInfo.ticker}`;
+                showStatus("success", "Balance Updated", balanceMessage);
+              } else {
+                balanceMessage = `Unexpected balance data: ${msg.Data}`;
+                document.getElementById("balanceDisplay").textContent = "N/A";
+                showStatus("warning", "Balance Warning", balanceMessage);
+              }
+            } else {
+              balanceMessage = "No usable balance data found in response.";
+              document.getElementById("balanceDisplay").textContent = "N/A";
+              showStatus("warning", "Balance Warning", balanceMessage);
+            }
+          } else {
+            balanceMessage = "No messages received from balance query.";
+            document.getElementById("balanceDisplay").textContent = "N/A";
+            showStatus("warning", "Balance Warning", balanceMessage);
+          }
+          state.tokenBalance = currentBalance;
+          console.log("Balance after refresh:", state.tokenBalance);
+        } catch (error) {
+          console.error("Error refreshing balance:", error);
+          document.getElementById("balanceDisplay").textContent = "Error";
+          showStatus(
+            "error",
+            "Balance Error",
+            error.message || "Failed to refresh token balance"
+          );
+        }
+      }
+      // --- End of Updated refreshBalance Function ---
+
+      // --- Updated mintToken Function (with safer mintPrice access) ---
+      async function mintToken() {
+        try {
+          showStatus("loading", "Minting", "Processing token mint...");
+          elements.mintToken.disabled = true;
+          elements.mintToken.classList.add("opacity-50");
+
+          console.log(
+            "FRONTEND DEBUG: Sending Mint request to vault process:",
+            PROCESS_ID
+          );
+
+          // Safely access mintPrice. If state.tokenInfo or state.tokenInfo.mintPrice is null/undefined,
+          // it defaults to 1 AR in Winston.
+          const mintPriceWinston = state.tokenInfo?.mintPrice || 1000000000;
+
+          const mintMessageResponse = await message({
+            process: PROCESS_ID,
+            signer: createDataItemSigner(window.arweaveWallet),
+            tags: [
+              { name: "Action", value: "Mint" },
+              { name: "Quantity", value: "1" }, // Adjust if you have a quantity input
+            ],
+            Data: mintPriceWinston.toString(), // Send AR payment as Data
+          });
+
+          console.log(
+            "FRONTEND DEBUG: Mint request sent to vault. Message ID:",
+            mintMessageResponse
+          );
+
+          const mintResult = await result({
+            process: PROCESS_ID,
+            message: mintMessageResponse,
+            sort: "DESC",
+            limit: 1,
+          });
+
+          console.log(
+            "FRONTEND DEBUG: Vault's response to mint request (raw result):",
+            JSON.stringify(mintResult, null, 2)
+          );
+
+          let mintSuccess = false;
+          let statusMessage = "Unknown response from vault.";
+
+          if (
+            mintResult &&
+            mintResult.Messages &&
+            mintResult.Messages.length > 0
+          ) {
+            const responseMessage = mintResult.Messages[0];
+            console.log(
+              "FRONTEND DEBUG: Found message in result.Messages:",
+              JSON.stringify(responseMessage, null, 2)
+            );
+
+            const statusTag = responseMessage.Tags?.find(
+              (tag) => tag.name === "Status"
+            );
+            const errorTag = responseMessage.Tags?.find(
+              (tag) => tag.name === "Error"
+            );
+            const actionTag = responseMessage.Tags?.find(
+              (tag) => tag.name === "Action"
+            );
+            const referenceTag = responseMessage.Tags?.find(
+              (tag) => tag.name === "Reference"
+            );
+
+            console.log("FRONTEND DEBUG: Message Tags:", {
+              status: statusTag?.value,
+              error: errorTag?.value,
+              action: actionTag?.value,
+              reference: referenceTag?.value,
+            });
+            console.log("FRONTEND DEBUG: Message Data:", responseMessage.Data);
+
+            if (referenceTag && referenceTag.value === mintMessageResponse) {
+              if (actionTag && actionTag.value === "Mint-Response") {
+                if (statusTag && statusTag.value === "Success") {
+                  mintSuccess = true;
+                  statusMessage =
+                    responseMessage.Data ||
+                    "Token mint request successfully processed by vault!";
+                } else if (statusTag && statusTag.value === "Error") {
+                  statusMessage =
+                    errorTag?.value ||
+                    responseMessage.Data ||
+                    "Vault reported an error.";
+                } else {
+                  statusMessage =
+                    responseMessage.Data ||
+                    "Received an ambiguous response from vault with Mint-Response action.";
+                  mintSuccess = false;
+                }
+              } else {
+                statusMessage =
+                  "Vault responded, but message Action was not 'Mint-Response'.";
+                console.warn(
+                  "FRONTEND DEBUG: Unexpected Action tag in vault response:",
+                  actionTag?.value
+                );
+                mintSuccess = false;
+              }
+            } else {
+              statusMessage =
+                "Vault responded, but the response was not directly referenced to our mint message.";
+              console.warn(
+                "FRONTEND DEBUG: Mismatched Reference tag or missing:",
+                referenceTag?.value,
+                "Expected:",
+                mintMessageResponse
+              );
+              mintSuccess = false;
+            }
+          } else if (
+            mintResult &&
+            mintResult.Output &&
+            mintResult.Output.data
+          ) {
+            statusMessage =
+              "Vault processed request, but no structured message was returned. Check vault logs.";
+            console.warn(
+              "FRONTEND DEBUG: Vault's process output (fallback):",
+              mintResult.Output.data
+            );
+            mintSuccess = false;
+          } else {
+            statusMessage =
+              "No valid response message received from vault process.";
+            console.warn(
+              "FRONTEND DEBUG: No messages found in vault's result for mint request.",
+              mintResult
+            );
+            mintSuccess = false;
+          }
+
+          if (mintSuccess) {
+            showStatus("success", "Mint Request Sent", statusMessage);
+            setTimeout(async () => {
+              console.log(
+                "FRONTEND DEBUG: Attempting to refresh balance after vault processed mint request..."
+              );
+              await refreshBalance();
+              elements.mintToken.disabled = false;
+              elements.mintToken.classList.remove("opacity-50");
+              showStatus(
+                "success",
+                "Mint Complete",
+                `Balance updated. ${statusMessage}`
+              );
+            }, 3000);
+          } else {
+            showStatus("error", "Mint Failed", statusMessage);
+            elements.mintToken.disabled = false;
+            elements.mintToken.classList.remove("opacity-50");
+          }
+        } catch (error) {
+          console.error("FRONTEND DEBUG: Error minting token:", error);
+          showStatus(
+            "error",
+            "Mint Error",
+            error.message || "Failed to mint token (network/wallet error)"
+          );
+          elements.mintToken.disabled = false;
+          elements.mintToken.classList.remove("opacity-50");
+        }
+      }
+      // --- End of Updated mintToken Function ---
+
+      // --- NEW FUNCTION: refreshTokensAndContentInfo ---
+      async function refreshTokensAndContentInfo() {
+        try {
+          console.log(
+            "FRONTEND DEBUG: Fetching TokenInfo from vault process:",
+            PROCESS_ID
+          );
+          // Query the vault for its TokenInfo
+          const tokenInfoMessage = await message({
+            process: PROCESS_ID,
+            tags: [{ name: "Action", value: "TokenInfo" }],
+          });
+
+          const tokenInfoResult = await result({
+            process: PROCESS_ID,
+            message: tokenInfoMessage,
+            sort: "DESC",
+            limit: 1,
+          });
+
+          console.log(
+            "FRONTEND DEBUG: TokenInfo raw response:",
+            JSON.stringify(tokenInfoResult, null, 2)
+          );
+
+          if (
+            tokenInfoResult &&
+            tokenInfoResult.Messages &&
+            tokenInfoResult.Messages.length > 0
+          ) {
+            const msg = tokenInfoResult.Messages[0];
+            const statusTag = msg.Tags?.find((tag) => tag.name === "Status");
+            const actionTag = msg.Tags?.find((tag) => tag.name === "Action");
+
+            if (statusTag?.value === "Success" && msg.Data) {
+              // Removed strict check for 'TokenInfo-Response' as vault.lua just uses 'Response'
+              try {
+                state.tokenInfo = JSON.parse(msg.Data);
+                console.log(
+                  "FRONTEND DEBUG: TokenInfo loaded:",
+                  state.tokenInfo
+                );
+
+                // Update UI elements with token info
+                // Make sure these HTML elements exist (see step 3)
+                document.getElementById("tokenNameDisplay").textContent =
+                  state.tokenInfo.name || "Content Access Token";
+                document.getElementById("tokenTickerDisplay").textContent =
+                  state.tokenInfo.ticker || "CAT";
+
+                // Display the mint price, converting from Winston to AR for readability
+                // Assuming 1 AR = 10^12 Winston, adjust if your base unit is different
+                // Standard ao is 10^9 Winston per AR.
+                document.getElementById("mintPrice").textContent =
+                  `${(state.tokenInfo.mintPrice / 1000000000).toFixed(2)} AR` ||
+                  "N/A";
+              } catch (jsonError) {
+                console.error(
+                  "FRONTEND DEBUG: Error parsing TokenInfo JSON:",
+                  jsonError
+                );
+                state.tokenInfo = {}; // Initialize to empty object to prevent null errors
+              }
+            } else {
+              console.warn(
+                "FRONTEND DEBUG: Failed to get TokenInfo from vault. Status:",
+                statusTag?.value,
+                "Action:",
+                actionTag?.value,
+                "Data:",
+                msg.Data
+              );
+              state.tokenInfo = {}; // Initialize to empty object to prevent null errors
+            }
+          } else {
+            console.warn(
+              "FRONTEND DEBUG: No messages received from TokenInfo query.",
+              tokenInfoResult
+            );
+            state.tokenInfo = {}; // Initialize to empty object
+          }
+        } catch (error) {
+          console.error("FRONTEND DEBUG: Error fetching TokenInfo:", error);
+          state.tokenInfo = {}; // Initialize to empty object on error
+        }
+      }
+      // --- END NEW FUNCTION: refreshTokensAndContentInfo ---
+
+      async function handleContentUpload(event) {
+        event.preventDefault();
+        const title = document.getElementById("contentTitle").value;
+        const description = document.getElementById("contentDescription").value;
+        const file = document.getElementById("contentFile").files[0];
+        if (!file) {
+          showStatus("error", "Upload Error", "Please select a file to upload");
+          return;
+        }
+        showStatus(
+          "loading",
+          "Uploading",
+          "Encrypting and uploading content..."
+        );
+        setTimeout(async () => {
+          try {
+            const contentId = "simulated-tx-" + Date.now();
+            const encryptionKey = generateRandomKey();
+            await sendMessage("RegisterContent", {
+              ContentId: contentId,
+              EncryptionKey: encryptionKey,
+              ContentType: file.type,
+              Title: title,
+              Description: description,
+            });
+            document.getElementById("uploadForm").reset();
+            showStatus(
+              "success",
+              "Upload Complete",
+              "Content encrypted and uploaded successfully"
+            );
+          } catch (error) {
+            showStatus(
+              "error",
+              "Registration Error",
+              error.message || "Failed to register content"
+            );
+          }
+        }, 2000);
+      }
+
+      async function updateTokenInfo(event) {
+        event.preventDefault();
+        const name = document.getElementById("tokenName").value;
+        const ticker = document.getElementById("tokenTicker").value;
+        const mintPrice = document.getElementById("mintPrice").value;
+        showStatus("loading", "Updating", "Updating token information...");
+        await sendMessage("UpdateTokenInfo", {
+          Name: name,
+          Ticker: ticker,
+          MintPrice: (parseFloat(mintPrice) * 1000000000).toString(),
+        });
+        await loadTokenInfo();
+        showStatus(
+          "success",
+          "Update Complete",
+          "Token information updated successfully"
+        );
+      }
+
+      function closeContentViewer() {
+        elements.contentViewer.classList.add("hidden");
+        elements.contentContainer.innerHTML = "";
+      }
+
+      async function sendMessage(action, tags = {}) {
+        if (!state.signer)
+          throw new Error(
+            "Wallet not connected. Please connect your wallet first."
+          );
+        const res = await message({
+          process: PROCESS_ID,
+          signer: state.signer,
+          tags: [
+            { name: "Action", value: action },
+            ...Object.entries(tags).map(([name, value]) => ({ name, value })),
+          ],
+        });
+        const { Messages } = await result({
+          process: PROCESS_ID,
+          message: res,
+        });
+        if (Messages && Messages.length > 0) {
+          if (Messages[0].Tags && Object.keys(Messages[0].Tags).length > 0) {
+            return Messages[0].Tags;
+          } else if (Messages[0].Data) {
+            try {
+              return JSON.parse(Messages[0].Data);
+            } catch {
+              return Messages[0].Data;
+            }
+          }
+        }
+        return null;
+      }
+
+      function shortenAddress(address) {
+        if (!address) return "";
+        return `${address.substring(0, 6)}...${address.substring(
+          address.length - 4
+        )}`;
+      }
+
+      function generateRandomKey() {
+        const array = new Uint8Array(32);
+        window.crypto.getRandomValues(array);
+        return Array.from(array, (byte) =>
+          byte.toString(16).padStart(2, "0")
+        ).join("");
+      }
+
+      function showStatus(type, title, text) {
+        const statusMessage = document.getElementById("statusMessage");
+        const statusIcon = document.getElementById("statusIcon");
+        const statusTitle = document.getElementById("statusTitle");
+        const statusText = document.getElementById("statusText");
+        if (type === "success") {
+          statusIcon.innerHTML =
+            '<svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        } else if (type === "error") {
+          statusIcon.innerHTML =
+            '<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+        } else if (type === "loading") {
+          statusIcon.innerHTML = '<div class="loading"></div>';
+        }
+        statusTitle.textContent = title;
+        statusText.textContent = text;
+        statusMessage.classList.remove("hidden");
+        if (type !== "loading") {
+          setTimeout(() => {
+            statusMessage.classList.add("hidden");
+          }, 5000);
+        }
+      }
+
+      elements.connectWallet.addEventListener("click", connectWallet);
+      elements.mintToken.addEventListener("click", mintToken);
+      elements.refreshBalance.addEventListener("click", refreshBalance);
+      elements.closeViewer.addEventListener("click", closeContentViewer);
+      elements.uploadForm.addEventListener("submit", handleContentUpload);
+      elements.tokenInfoForm.addEventListener("submit", updateTokenInfo);
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        if (window.arweaveWallet) {
+          try {
+            const permissions = await window.arweaveWallet.getPermissions();
+            if (permissions.includes("ACCESS_ADDRESS")) await connectWallet();
+          } catch {}
+        } else {
+          showStatus(
+            "error",
+            "Wallet Not Found",
+            "Please install ArConnect or Wander wallet extension to use this application."
+          );
+          elements.connectWallet.addEventListener("click", () => {
+            window.open("https://www.arconnect.io/", "_blank");
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
