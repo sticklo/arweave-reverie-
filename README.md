@@ -1,4 +1,4 @@
-# AO Content Vault
+# REVERIE: An AO Content Vault
 
 This project demonstrates a decentralized content gating mechanism using **Arweave's AO (Arweave Overlay)** for backend computation and a custom token for access. Users can mint tokens on the AO network via a simple frontend, which then grants them access to exclusive content.
 
